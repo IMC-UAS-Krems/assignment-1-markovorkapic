@@ -1,0 +1,217 @@
+@startuml StreamingPlatform
+
+' ── Skin / theme ─────────────────────────────────────────────────────────────
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+skinparam classHeaderBackgroundColor #E8F4FD
+skinparam classBorderColor #2C7BB6
+skinparam arrowColor #2C7BB6
+skinparam arrowThickness 1.5
+skinparam packageStyle rectangle
+skinparam packageBackgroundColor #FAFAFA
+skinparam packageBorderColor #AAAAAA
+' skinparam linetype ortho
+' skinparam shadowing false
+' skinparam nodesep 40
+' skinparam ranksep 50
+
+' ── Packages ─────────────────────────────────────────────────────────────────
+
+package "Tracks" #EAF4FB {
+
+    abstract class Track {
+        + track_id: str
+        + title: str
+        + duration_seconds: int
+        + genre: str
+        --
+        + duration_minutes(): float
+    }
+
+    class Song extends Track {
+        + artist: Artist
+    }
+
+    class SingleRelease extends Song {
+        + release_date: date
+    }
+
+    class AlbumTrack extends Song {
+        + track_number: int
+        + album: Album | None
+    }
+
+    class Podcast extends Track {
+        + host: str
+        + description: str
+    }
+
+    class InterviewEpisode extends Podcast {
+        + guest: str
+    }
+
+    class NarrativeEpisode extends Podcast {
+        + season: int
+        + episode_number: int
+    }
+
+    class AudiobookTrack extends Track {
+        + author: str
+        + narrator: str
+    }
+
+    ' Track <|-- Song
+    ' Track <|-- Podcast
+    ' Track <|-- AudiobookTrack
+    ' Song <|-- SingleRelease
+    ' Song <|-- AlbumTrack
+    ' Podcast <|-- InterviewEpisode
+    ' Podcast <|-- NarrativeEpisode
+}
+
+package "Users" #EBF5EB {
+
+    abstract class User {
+        + user_id: str
+        + name: str
+        + age: int
+        + sessions: list[ListeningSession]
+        --
+        + add_session(session): void
+        + total_listening_seconds(): int
+        + total_listening_minutes(): float
+        + unique_tracks_listened(): set[str]
+    }
+
+    class FreeUser extends User {
+        + MAX_SKIPS_PER_HOUR: int = 6
+    }
+
+    class PremiumUser extends User {
+        + subscription_start: date
+    }
+
+    class FamilyAccountUser extends User {
+        + sub_users: list[FamilyMember]
+        --
+        + add_sub_user(sub_user): void
+        + all_members(): list[User]
+    }
+
+    class FamilyMember extends User {
+        + parent: FamilyAccountUser
+    }
+
+    ' User <|-- FreeUser
+    ' User <|-- PremiumUser
+    ' User <|-- FamilyAccountUser
+    ' User <|-- FamilyMember
+
+    FamilyAccountUser "1" o-- "0..*" FamilyMember : manages >
+}
+
+package "Catalogue" #FEF9E7 {
+
+    class Artist {
+        + artist_id: str
+        + name: str
+        + genre: str
+        + tracks: list[Track]
+        --
+        + add_track(track): void
+        + track_count(): int
+    }
+
+    class Album {
+        + album_id: str
+        + title: str
+        + artist: Artist
+        + release_year: int
+        + tracks: list[AlbumTrack]
+        --
+        + add_track(track): void
+        + track_ids(): set[str]
+        + duration_seconds(): int
+    }
+}
+
+package "Playlists" #FDF2F8 {
+
+    class Playlist {
+        + playlist_id: str
+        + name: str
+        + owner: User
+        + tracks: list[Track]
+        --
+        + add_track(track): void
+        + remove_track(track_id): void
+        + total_duration_seconds(): int
+    }
+
+    class CollaborativePlaylist extends Playlist {
+        + contributors: list[User]
+        --
+        + add_contributor(user): void
+        + remove_contributor(user): void
+    }
+
+    Playlist <|-- CollaborativePlaylist
+}
+
+package "Sessions" #FDF5F0 {
+
+    class ListeningSession {
+        + session_id: str
+        + user: User
+        + track: Track
+        + timestamp: datetime
+        + duration_listened_seconds: int
+        --
+        + duration_listened_minutes(): float
+    }
+}
+
+package "Platform" #F4F4F4 {
+
+    class StreamingPlatform {
+        + name: str
+        + _catalogue: dict[str, Track]
+        + _users: dict[str, User]
+        + _artists: dict[str, Artist]
+        + _albums: dict[str, Album]
+        + _playlists: dict[str, Playlist]
+        + _sessions: list[ListeningSession]
+        --
+        + add_track(track): void
+        + add_user(user): void
+        + add_artist(artist): void
+        + add_album(album): void
+        + add_playlist(playlist): void
+        + record_session(session): void
+        + get_track(track_id): Track | None
+        + get_user(user_id): User | None
+        + get_artist(artist_id): Artist | None
+        + get_album(album_id): Album | None
+        + all_users(): list[User]
+        + all_tracks(): list[Track]
+    }
+}
+
+' ── Cross-package associations ────────────────────────────────────────────────
+
+StreamingPlatform "1" *-- "0..*" Track : manages >
+StreamingPlatform "1" *-- "0..*" User : registers >
+StreamingPlatform "1" *-- "0..*" Artist : manages >
+StreamingPlatform "1" *-- "0..*" Album : manages >
+StreamingPlatform "1" *-- "0..*" Playlist : manages >
+StreamingPlatform "1" *-- "0..*" ListeningSession : records >
+
+Artist "1" o-- "0..*" Track : owns >
+Album "1" *-- "1..*" AlbumTrack : contains >
+Playlist "1" o-- "0..*" Track : references >
+User "1" *-- "0..*" ListeningSession : history >
+
+ListeningSession ..> Track : references >
+ListeningSession ..> User : references >
+
+@enduml

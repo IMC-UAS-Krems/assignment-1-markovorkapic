@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "music-streaming-platform"
+version = "0.1.0"
+description = "Programming II assignment - Music Streaming Platform (OOP with Python 3.12)"
+requires-python = ">=3.12"
+dependencies = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths  = ["tests"]
+pythonpath = ["src"]
+addopts    = "-v"
+
+[tool.pyright]
+pythonVersion     = "3.12"
+venvPath          = "."
+venv              = "venv"
+include           = ["src", "tests"]
