@@ -13,9 +13,7 @@ Classes to implement:
       - NarrativeEpisode
     - AudiobookTrack
 """
-from datetime import *
-
-
+import datetime
 
 class Track:
     def __init__(self, track_id: str, title: str, duration_seconds: int, genre:str):
@@ -23,18 +21,21 @@ class Track:
         self.title = title
         self.duration_seconds = duration_seconds 
         self.genre = genre
-    def duration_minutes():
-        ...
+    def duration_minutes(self) -> float:
+        return self.duration_seconds / 60
 
-
+    def __eq__(self, other: object) -> bool:  #sees if two tracks are equal
+        if not isinstance(other, Track):  
+            return False
+        return self.track_id == other.track_id
 
 class Song(Track):
     def __init__(self, track_id: str, title: str, duration_seconds: int, genre:str, artist: "Artist"):
         super().__init__(track_id, title, duration_seconds, genre)
         self.artist = artist
 
-class AlbumTrack(Song): #import album later
-    def __init__(self, track_id: str, title: str, duration_seconds: int, genre:str, artist: "Artist", track_number: int, album: None = None):
+class AlbumTrack(Song):
+    def __init__(self, track_id: str, title: str, duration_seconds: int, genre:str, artist: "Artist", track_number: int, album: "Album" | None = None):
         super().__init__(track_id, title, duration_seconds, genre, artist)
         self.album = album
         self.artist = artist
@@ -54,7 +55,7 @@ class Podcast(Track):
         self.description = description
 
 class NarrativeEpisode(Podcast):
-    def __init__(self, track_id: str, title: str, duration_seconds: int, genre:str, host: str, description: str, season: int, episode_number: int):
+    def __init__(self, track_id: str, title: str, duration_seconds: int, genre:str, host: str, season: int, episode_number: int, description: str = ""):
         super().__init__(track_id, title, duration_seconds, genre, host, description)
         self.season = season
         self.episode_number = episode_number
