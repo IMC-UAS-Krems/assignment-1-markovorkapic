@@ -7,6 +7,7 @@ and provides query methods for analytics.
 Classes to implement:
   - StreamingPlatform
 """
+import datetime
 from streaming.albums import *
 from streaming.artists import *
 from streaming.playlists import *
@@ -24,6 +25,9 @@ class StreamingPlatform:
         self._playlists = {}
         self._sessions = []
 
+
+
+#Basic Methods
     def add_track(self, track: "Track") -> None:
         self._catalogue[track.track_id] = track
 
@@ -60,3 +64,38 @@ class StreamingPlatform:
 
     def all_tracks(self) -> list:
         return list(self._catalogue.values())
+    
+
+#Queries
+    def total_listening_time_minutes(self, start: datetime, end: datetime) -> float:
+        #if the timestamp of the session is between start and end -> add it to a total sum
+        #later convert to minutes
+        i = len(self._sessions)
+        total = 0
+        while i != 0:
+            if self._sessions[i].timestamp >= start and self._sessions[i].timestamp <= end:
+                total = self._sessions[i].duration_listened_seconds
+            i -= 1
+        return total / 60
+    #not sure if this is correct, havent written a test for it yet
+    def avg_unique_tracks_per_premium_user(self, days: int = 30) -> float:
+        ...
+    def track_with_most_distinct_listeners(self) -> Track | None:
+        ...
+    def avg_session_duration_by_user_type(self) -> list[tuple[str, float]]:
+        ...
+    def total_listening_time_underage_sub_users_minutes(self, age_threshold: int = 18) -> float:
+        ...
+    def top_artists_by_listening_time(self, n: int = 5) -> list[tuple[Artist, float]]:
+        ...
+    def user_top_genre(self, user_id: str) -> tuple[str, float] | None:
+        ...
+    def collaborative_playlists_with_many_artists(self, threshold: int = 3) -> list[CollaborativePlaylist]:
+        ...
+    def avg_tracks_per_playlist_type(self) -> dict[str, float]:
+        ...
+    def users_who_completed_albums(self) -> list[tuple[User, list[str]]]:
+        ...
+
+#Need help with queries, kind of confusing.
+#The basic methods were hard enough, Im not sure how to approach these
