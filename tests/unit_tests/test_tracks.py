@@ -71,3 +71,4 @@ class TestTracks:
         audio = AudiobookTrack("a1", "Chapter", 600, "audio", author="Auth", narrator="Narr")
         assert audio.author == "Auth"
         assert audio.narrator == "Narr"
+
