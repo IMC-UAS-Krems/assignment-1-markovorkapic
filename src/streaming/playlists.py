@@ -25,8 +25,8 @@ class Playlist:
 class CollaborativePlaylist(Playlist):
     def __init__(self, playlist_id:str, name:str, owner: "User", tracks= None, contributors= None):
         super().__init__(playlist_id, name, owner, tracks)
-        self.contributors = contributors if contributors is not None else []
-    def add_contributor(self, user) -> None:
+        self.contributors = [owner]
+    def add_contributor(self, user: "User") -> None:
         if user not in self.contributors:
             self.contributors.append(user)
     def remove_contributor(self, user: "User") -> None:
